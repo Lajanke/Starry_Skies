@@ -1,8 +1,8 @@
 import React from 'react';
 import Axios from 'axios';
 import styled from 'styled-components';
+import config from '../config';
 const { getDarkHours, getCloudData } = require('../utils');
-
 
 class Verdict extends React.Component {
     state = {
@@ -13,6 +13,7 @@ class Verdict extends React.Component {
     }
 
     componentDidMount() {
+        console.log(config.MY_KEY)
         this.getLocation()
             .then((position) => {
                 this.setState({ lat: position.coords.latitude, long: position.coords.longitude })
@@ -45,8 +46,8 @@ class Verdict extends React.Component {
     }
 
     fetchCloudData = (start, hours, lat, long) => {
-        console.log(start, hours, lat, long)
-        Axios.get(`https://api.weatherbit.io/v2.0/forecast/hourly?lat=${lat}&lon=${long}&key=[APIKEY]`)
+        console.log(config)
+        Axios.get(`https://api.weatherbit.io/v2.0/forecast/hourly?lat=${lat}&lon=${long}&key=${config.MY_KEY}`)
             .then((response) => {
                 this.setState({ cloudCover: getCloudData(start, hours, response.data.data) });
             })
