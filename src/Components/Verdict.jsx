@@ -8,34 +8,54 @@ class Verdict extends React.Component {
     state = {
         darkness: {},
         cloudCover: 0,
+        lat: 0,
+        log: 0,
     }
 
     componentDidMount() {
-        this.fetchDarkHours()
+        this.getLocation()
+            .then((position) => {
+                this.setState({ lat: position.coords.latitude, long: position.coords.longitude })
+            })
+            .catch((err) => console.log(err.message));
     }
 
-    fetchDarkHours = () => {
-        Axios.get('https://api.sunrise-sunset.org/json?formatted=0')
+    componentDidUpdate(prevProps, prevState) {
+        const { lat, long } = this.state;
+        if (prevState.lat !== lat) {
+            this.fetchDarkHours(lat, long);
+        }
+    }
+
+    getLocation = () => {
+        return new Promise(function (resolve, reject) {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+    }
+
+    fetchDarkHours = (lat, long) => {
+        Axios.get(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${long}&formatted=0`)
             .then((response) => {
-                this.setState({ darkness: getDarkHours(response.data.results) })
+                this.setState({ darkness: getDarkHours(response.data.results) });
             })
             .then(() => {
                 const { darkStart, darkHours } = this.state.darkness
-                this.fetchCloudData(darkStart, darkHours)
+                this.fetchCloudData(darkStart, darkHours, lat, long);
             })
-
     }
 
-    fetchCloudData = (start, hours) => {
-        Axios.get('https://api.weatherbit.io/v2.0/forecast/hourly')
+    fetchCloudData = (start, hours, lat, long) => {
+        console.log(start, hours, lat, long)
+        Axios.get(`https://api.weatherbit.io/v2.0/forecast/hourly?lat=${lat}&lon=${long}&key=[APIKEY]`)
             .then((response) => {
-                this.setState({ cloudCover: getCloudData(start, hours, response.data.data) })
+                this.setState({ cloudCover: getCloudData(start, hours, response.data.data) });
             })
     }
 
     handleButtonClick = () => {
-        const { astroTwiStart, astroTwiHours } = this.state.darkness
-        this.fetchCloudData(astroTwiStart, astroTwiHours)
+        const { astroTwiStart, astroTwiHours } = this.state.darkness;
+        const { lat, long } = this.state;
+        this.fetchCloudData(astroTwiStart, astroTwiHours, lat, long)
     }
 
     render() {
@@ -43,7 +63,7 @@ class Verdict extends React.Component {
         const { cloudCover } = this.state
 
         const Div = styled.div`
-            opacity: ${this.state.cloudCover}%;
+            opacity: ${cloudCover}%;
         `
         return (
             <React.Fragment>
