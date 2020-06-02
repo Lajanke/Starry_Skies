@@ -7,13 +7,12 @@ const { getDarkHours, getCloudData } = require('../utils');
 class Verdict extends React.Component {
     state = {
         darkness: {},
-        cloudCover: 0,
+        cloudCover: null,
         lat: 0,
         log: 0,
     }
 
     componentDidMount() {
-        console.log(config.MY_KEY)
         this.getLocation()
             .then((position) => {
                 this.setState({ lat: position.coords.latitude, long: position.coords.longitude })
@@ -46,7 +45,6 @@ class Verdict extends React.Component {
     }
 
     fetchCloudData = (start, hours, lat, long) => {
-        console.log(config)
         Axios.get(`https://api.weatherbit.io/v2.0/forecast/hourly?lat=${lat}&lon=${long}&key=${config.MY_KEY}`)
             .then((response) => {
                 this.setState({ cloudCover: getCloudData(start, hours, response.data.data) });
@@ -64,8 +62,15 @@ class Verdict extends React.Component {
         const { cloudCover } = this.state
 
         const Div = styled.div`
-            opacity: ${cloudCover}%;
-        `
+        .clouds{
+            opacity: ${cloudCover / 100};
+        }
+
+        .blue {
+            opacity: 0.7
+        }   
+        `;
+
         return (
             <React.Fragment>
                 {darkHours <= 0 &&
@@ -81,18 +86,22 @@ class Verdict extends React.Component {
                     <p className='tomorrow'>Dark already. Showing data for tomorrow night.</p>
                 }
                 <br />
-                <img src="stars._crop.png" alt="stars" />
+                <img src='milky_way2.png' alt="stars" />
                 <Div>
-                    <img src="clouds_repeat2.png" alt="clouds" className='clouds' />
+                    {darkHours <= 0 && !cloudCover &&
+                        <img src='blue.png' alt='blue sky' className='blue' />
+                    }
+                    {(darkHours > 0 || astroTwiHours > 0) && cloudCover &&
+                        <img src="clouds.png" alt="clouds" className='clouds' />
+                    }
                 </Div>
-
                 <div className='bottomDiv'>
                     <h3>{this.state.cloudCover}% cloud cover</h3>
                     <p>Should I get the telescope out?</p>
-                    {(cloudCover < 10 && darkHours > 0) &&
+                    {(cloudCover < 10 && (darkHours > 0 || astroTwiHours > 0)) &&
                         <p>DEFINITELY</p>
                     }
-                    {(cloudCover >= 10 && cloudCover && cloudCover < 30 && darkHours > 0) &&
+                    {(cloudCover >= 10 && cloudCover < 30 && (darkHours > 0 || astroTwiHours > 0)) &&
                         <p>LOOKING GOOD</p>
                     }
                     {(cloudCover >= 30 && cloudCover <= 70) &&
