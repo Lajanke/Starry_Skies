@@ -51,4 +51,19 @@ const getDarkHours = (obj) => {
     return darkTimes;
 }
 
-module.exports = { getDarkHours }
+const getCloudData = (start, hours, weatherbit) => {
+    if (hours === 0) {
+        return 0;
+    }
+
+    const index = weatherbit.findIndex(time => (new Date(time.timestamp_local).getHours()) === start)
+    const darkHoursArray = [...weatherbit].splice(index, hours)
+    console.log(darkHoursArray)
+    
+    const numArray = darkHoursArray.map(time => time.clouds)
+    const cloudCover = Math.round((numArray.reduce((a, b) => a + b, 0) / hours))
+
+    return cloudCover;
+}
+
+module.exports = { getDarkHours, getCloudData }

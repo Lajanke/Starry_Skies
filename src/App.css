@@ -1,3 +1,66 @@
 .App {
   text-align: center;
+  color: #edf0fc;
+  height: 100%;
+  margin: 0;
+  font-family: 'roboto', sans-serif;
 }
+ 
+html {
+  background-color: #010312;
+  height: 100%;
+  width: 100%;
+}
+
+h1 {
+  font-weight: 400;
+}
+
+h2 {
+  font-weight: 200;
+}
+
+img {
+  max-width: 350px;
+  min-width: 200px;
+  height: 350px;
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  border-radius: 50%;
+  background-color: #081426;
+  box-shadow: inset 0px 0px 2px 2px #010312;
+}
+
+.bottomDiv {
+  width: 300px; 
+  position: absolute;
+  bottom: 5rem;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+}
+
+button {
+  background-color: #edf0fc;
+  color: #010312;
+  border: none;
+  padding: 0.7rem;
+  border-radius: 0.1rem;
+}
+
+p {
+  font-weight: 400;
+}
+
+.tomorrow {
+  font-weight: 200;
+}
+
+
+
+
+
