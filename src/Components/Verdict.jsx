@@ -10,6 +10,7 @@ class Verdict extends React.Component {
         cloudCover: null,
         lat: 0,
         log: 0,
+        err: '',
     }
 
     componentDidMount() {
@@ -17,7 +18,10 @@ class Verdict extends React.Component {
             .then((position) => {
                 this.setState({ lat: position.coords.latitude, long: position.coords.longitude })
             })
-            .catch((err) => console.log(err.message));
+            .catch((err) => {
+                console.log(err)
+                this.setState({err: err})
+            });
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -42,6 +46,9 @@ class Verdict extends React.Component {
                 const { darkStart, darkHours } = this.state.darkness
                 this.fetchCloudData(darkStart, darkHours, lat, long);
             })
+            .catch((err) => {
+                this.setState({err: err.message})
+            });
     }
 
     fetchCloudData = (start, hours, lat, long) => {
@@ -50,6 +57,9 @@ class Verdict extends React.Component {
             .then((response) => {
                 this.setState({ cloudCover: getCloudData(start, hours, response.data.data) });
             })
+            .catch((err) => {
+                this.setState({err: err.message})
+            });
     }
 
     handleButtonClick = () => {
@@ -71,6 +81,8 @@ class Verdict extends React.Component {
             opacity: 0.7
         }   
         `;
+
+    if (this.state.err) return <p>{this.state.err}</p>
 
         return (
             <React.Fragment>
