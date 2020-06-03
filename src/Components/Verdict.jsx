@@ -45,6 +45,7 @@ class Verdict extends React.Component {
     }
 
     fetchCloudData = (start, hours, lat, long) => {
+        const MY_KEY = config.KEY
         Axios.get(`https://api.weatherbit.io/v2.0/forecast/hourly?lat=${lat}&lon=${long}&key=${MY_KEY}`)
             .then((response) => {
                 this.setState({ cloudCover: getCloudData(start, hours, response.data.data) });

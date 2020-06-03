@@ -58,7 +58,6 @@ const getCloudData = (start, hours, weatherbit) => {
 
     const index = weatherbit.findIndex(time => (new Date(time.timestamp_local).getHours()) === start)
     const darkHoursArray = [...weatherbit].splice(index, hours)
-    console.log(darkHoursArray)
     
     const numArray = darkHoursArray.map(time => time.clouds)
     const cloudCover = Math.round((numArray.reduce((a, b) => a + b, 0) / hours))
