@@ -2,7 +2,7 @@ import React from 'react';
 import Axios from 'axios';
 import styled from 'styled-components';
 import config from '../config';
-const { getDarkHours, getCloudData } = require('../utils');
+import { getCloudData, getDarkHours } from '../utils';
 
 class Verdict extends React.Component {
     state = {

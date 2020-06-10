@@ -1,4 +1,4 @@
-const getDarkHours = (obj) => { 
+export const getDarkHours = (obj) => { 
     if (Object.keys(obj).length === 0) return {};
 
     //True Darkness
@@ -51,7 +51,7 @@ const getDarkHours = (obj) => {
     return darkTimes;
 }
 
-const getCloudData = (start, hours, weatherbit) => {
+export const getCloudData = (start, hours, weatherbit) => {
     if (hours === 0) {
         return 0;
     }
@@ -64,5 +64,3 @@ const getCloudData = (start, hours, weatherbit) => {
 
     return cloudCover;
 }
-
-module.exports = { getDarkHours, getCloudData }
