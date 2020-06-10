@@ -11,16 +11,16 @@ class Verdict extends React.Component {
         lat: 0,
         log: 0,
         err: '',
+        loading: true,
     }
 
     componentDidMount() {
         this.getLocation()
             .then((position) => {
-                this.setState({ lat: position.coords.latitude, long: position.coords.longitude })
+                this.setState({ lat: position.coords.latitude, long: position.coords.longitude, loading: false })
             })
             .catch((err) => {
-                console.log(err)
-                this.setState({err: err})
+                this.setState({ err: err })
             });
     }
 
@@ -47,7 +47,7 @@ class Verdict extends React.Component {
                 this.fetchCloudData(darkStart, darkHours, lat, long);
             })
             .catch((err) => {
-                this.setState({err: err.message})
+                this.setState({ err: err.message })
             });
     }
 
@@ -58,7 +58,7 @@ class Verdict extends React.Component {
                 this.setState({ cloudCover: getCloudData(start, hours, response.data.data) });
             })
             .catch((err) => {
-                this.setState({err: err.message})
+                this.setState({ err: err.message })
             });
     }
 
@@ -82,19 +82,34 @@ class Verdict extends React.Component {
         }   
         `;
 
-    if (this.state.err) return <p>{this.state.err}</p>
-
+        if (this.state.err) return <p>{this.state.err}</p>
+        if (this.state.loading) return <p>Loading...</p>
         return (
             <React.Fragment>
-                {darkHours <= 0 &&
-                    <h1>No True Darkness Tonight</h1>
+                <h1>Telescope Night?</h1>
+                <section className='verdict'>
+                    {(darkHours === 0 && cloudCover === 0) && //will need to change so doesn't appear for a clear night using twilight hours.
+                        <>
+                            <p>No true darkness tonight, use astronomical twilight.</p>
+                        </>
+                    }
+                    {((cloudCover > 0 && cloudCover < 10) && (darkHours > 0 || astroTwiHours > 0)) &&
+                        <p>DEFINITELY</p>
+                    }
+                    {(cloudCover >= 10 && cloudCover < 30 && (darkHours > 0 || astroTwiHours > 0)) &&
+                        <p>LOOKING GOOD</p>
+                    }
+                    {(cloudCover >= 30 && cloudCover <= 70) &&
+                        <p>MAYBE</p>
+                    }
+                    {cloudCover > 70 &&
+                        <p>No</p>
+                    }
+                </section>
+                {(cloudCover > 0) &&
+                    <h3>{this.state.cloudCover}% cloud cover</h3>
                 }
-                {darkHours > 0 &&
-                    <h1>Hours of Darkness: {darkHours}</h1>
-                }
-                {astroTwiHours &&
-                    <h2>Astronomical Twilight Hours: {astroTwiHours}</h2>
-                }
+
                 {(new Date().getHours() > darkStart || new Date().getHours() < 3) &&
                     <p className='tomorrow'>Dark already. Showing data for tomorrow night.</p>
                 }
@@ -109,22 +124,13 @@ class Verdict extends React.Component {
                     }
                 </Div>
                 <div className='bottomDiv'>
-                    <h3>{this.state.cloudCover}% cloud cover</h3>
-                    <p>Should I get the telescope out?</p>
-                    {(cloudCover < 10 && (darkHours > 0 || astroTwiHours > 0)) &&
-                        <p>DEFINITELY</p>
+                    {darkHours > 0 &&
+                        <h1>Hours of Darkness: {darkHours}</h1>
                     }
-                    {(cloudCover >= 10 && cloudCover < 30 && (darkHours > 0 || astroTwiHours > 0)) &&
-                        <p>LOOKING GOOD</p>
+                    {astroTwiHours &&
+                        <h2>Astronomical Twilight Hours: {astroTwiHours}</h2>
                     }
-                    {(cloudCover >= 30 && cloudCover <= 70) &&
-                        <p>MAYBE</p>
-                    }
-                    {cloudCover > 70 &&
-                        <p>DON'T BOTHER</p>
-                    }
-                    <br />
-                    <button onClick={this.handleButtonClick}>INCLUDE ASTRONOMICAL DARKNESS</button>
+                    <button onClick={this.handleButtonClick}>INCLUDE ASTRONOMICAL TWILIGHT</button>
                 </div>
             </React.Fragment>
         )
