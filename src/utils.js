@@ -1,4 +1,4 @@
-export const getDarkHours = (obj) => { 
+export const getDarkHours = (obj) => {
     if (Object.keys(obj).length === 0) return {};
 
     //True Darkness
@@ -19,8 +19,11 @@ export const getDarkHours = (obj) => {
     if (darkStartNum === darkEndNum && (darkStartNum > 10 || darkStartNum < 4)) {
         darkHours = 0;
     }
+    if (darkHours >= 24) {
+        darkHours -= 24
+    }
 
-//astro dark
+    //astro dark
 
     let astroStartNum = new Date(obj.nautical_twilight_end).getHours()
     const astroStartMins = new Date(obj.nautical_twilight_end).getMinutes()
@@ -33,10 +36,13 @@ export const getDarkHours = (obj) => {
     if (astroEndMins >= 30) {
         astroEndNum += 1
     }
-    
+
     let astroHours = astroEndNum - astroStartNum + 24;
     if (astroStartNum === astroEndNum && (astroStartNum > 10 || astroStartNum < 4)) {
         astroHours = 0;
+    }
+    if (astroHours >= 24) {
+        astroHours -= 24
     }
 
     const darkTimes = {
@@ -47,20 +53,47 @@ export const getDarkHours = (obj) => {
         'astroTwiStart': astroStartNum,
         'astroTwiEnd': astroEndNum,
     };
-
     return darkTimes;
 }
 
 export const getCloudData = (start, hours, weatherbit) => {
     if (hours === 0) {
-        return 0;
+        return null;
     }
-
     const index = weatherbit.findIndex(time => (new Date(time.timestamp_local).getHours()) === start)
     const darkHoursArray = [...weatherbit].splice(index, hours)
-    
+
     const numArray = darkHoursArray.map(time => time.clouds)
     const cloudCover = Math.round((numArray.reduce((a, b) => a + b, 0) / hours))
 
     return cloudCover;
+}
+
+export const calculateIfDarkAlready = (darkHours, timeNow, minutes) => {
+    if (timeNow < darkHours.darkStart) {
+        return false
+    } else if (darkHours.darkHours === 0) {
+        return false
+    } else if (darkHours.darkHours === timeNow && minutes < 50) {
+        return false
+    } else if (darkHours.darkStart < 5 && timeNow > darkHours.darkEnd) {
+        console.log(darkHours.dark)
+        return false
+    } else {
+        return true
+    }
+}
+
+export const calculateIfAstroDarkAlready = (darkHours, timeNow, minutes) => {
+    if (timeNow < darkHours.astroTwiStart) {
+        return false
+    } else if (darkHours.astroTwiHours === 0) {
+        return false
+    } else if (darkHours.darkHours === timeNow && minutes < 50) {
+        return false
+    } else if (darkHours.astroTwiStart < 5 && timeNow > darkHours.astroTwiEnd) {
+        return false
+    } else {
+        return true
+    }
 }

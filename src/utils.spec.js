@@ -1,4 +1,4 @@
-const { getDarkHours, getCloudData } = require('./utils');
+const { getDarkHours, getCloudData, calculateIfDarkAlready } = require('./utils');
 
 const weatherbit =
     [
@@ -945,6 +945,19 @@ describe('getDarkHours', () => {
         "astronomical_twilight_end": "1970-01-01T00:00:01+00:00"
     }
 
+    const nonFormat3 = {
+        "sunrise": "2020-06-13T03:39:40+00:00",
+        "sunset": "2020-06-13T20:38:41+00:00",
+        "solar_noon": "2020-06-13T12:09:10+00:00",
+        "day_length": 61141,
+        "civil_twilight_begin": "2020-06-13T02:47:21+00:00",
+        "civil_twilight_end": "2020-06-13T21:31:00+00:00",
+        "nautical_twilight_begin": "2020-06-13T01:14:08+00:00",
+        "nautical_twilight_end": "2020-06-13T23:04:12+00:00",
+        "astronomical_twilight_begin": "1970-01-01T00:00:01+00:00",
+        "astronomical_twilight_end": "1970-01-01T00:00:01+00:00"
+    }
+
     test('When passed an empty object, returns an empty object', () => {
         expect(getDarkHours({})).toEqual({});
     });
@@ -987,6 +1000,15 @@ describe('getDarkHours', () => {
         expect(output.astroTwiStart).toEqual(23);
         expect(output.astroTwiEnd).toEqual(3);
     })
+    test('Calculates the right ammount of dark hours when beggining at midnight or early morning', () => {
+        const output = getDarkHours(nonFormat3)
+        expect(output.darkHours).toEqual(0);
+        expect(output.darkStart).toEqual(1);
+        expect(output.darkEnd).toEqual(1);
+        expect(output.astroTwiHours).toEqual(2);
+        expect(output.astroTwiStart).toEqual(0);
+        expect(output.astroTwiEnd).toEqual(2);
+    })
 });
 
 describe('getCloudData', () => {
@@ -1013,5 +1035,60 @@ describe('getCloudData', () => {
         expect(getCloudData(start3, hours3, weatherbit)).toBe(46);
     })
 });
+
+describe('calculateIfDarkAlready', () => {
+    const input1 = {
+        'darkHours': 4,
+        'darkStart': 22,
+        'darkEnd': 2,
+        'astroTwiHours': 6,
+        'astroTwiStart': 21,
+        'astroTwiEnd': 3,
+    }
+
+    const input2 = {
+        'darkHours': 0,
+        'darkStart': 1,
+        'darkEnd': 1,
+        'astroTwiHours': 2,
+        'astroTwiStart': 0,
+        'astroTwiEnd': 2,
+    }
+
+    const input3 = {
+        'darkHours': 1,
+        'darkStart': 1,
+        'darkEnd': 2,
+        'astroTwiHours': 3,
+        'astroTwiStart': 0,
+        'astroTwiEnd': 3,
+    }
+
+    test('Returns a boolean that defaults to false', () => {
+        expect(typeof (calculateIfDarkAlready(input1, input2))).toBe('boolean');
+    });
+    test('Returns false if current time is before dark hours', () => {
+        expect(calculateIfDarkAlready(input1, 15)).toBe(false);
+        expect(calculateIfDarkAlready(input2, 0)).toBe(false);
+    });
+    test('Returns false if current time is before dark hours that start in the early morning', () => {
+        expect(calculateIfDarkAlready(input2, 15)).toBe(false);
+    });
+    test('Returns false if current time is within the same hour as the start of darkness', () => {
+        expect(calculateIfDarkAlready(input2, 1)).toBe(false);
+    });
+    test('Returns true if current time is after beginning of dark hours', () => {
+        expect(calculateIfDarkAlready(input1, 23)).toBe(true);
+    });
+    test('Returns true if current time is after beginning of dark hours that start in the early morning', () => {
+        expect(calculateIfDarkAlready(input3, 2)).toBe(true);
+    });
+    test('Takes minutes into account as API updates every 10 mins. Returns false if dark start hour equals time now hour and minutes are less than 50', () => {
+        expect(calculateIfDarkAlready(input3, 1, 30)).toBe(false);
+    });
+    test('Returns false if dark start hour equals time now hour and minutes >= 50', () => {
+        expect(calculateIfDarkAlready(input3, 1, 55)).toBe(true);
+    });
+})
 
 

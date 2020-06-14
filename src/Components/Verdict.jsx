@@ -2,7 +2,7 @@ import React from 'react';
 import Axios from 'axios';
 import styled from 'styled-components';
 import config from '../config';
-import { getCloudData, getDarkHours } from '../utils';
+import { getCloudData, getDarkHours, calculateIfDarkAlready, calculateIfAstroDarkAlready } from '../utils';
 
 class Verdict extends React.Component {
     state = {
@@ -10,6 +10,7 @@ class Verdict extends React.Component {
         cloudCover: null,
         lat: 0,
         log: 0,
+        darkAlready: false,
         err: '',
         loading: true,
     }
@@ -44,6 +45,7 @@ class Verdict extends React.Component {
             })
             .then(() => {
                 const { darkStart, darkHours } = this.state.darkness
+                this.setState({ darkAlready: calculateIfDarkAlready(this.state.darkness, new Date().getHours(), new Date().getMinutes()) })
                 this.fetchCloudData(darkStart, darkHours, lat, long);
             })
             .catch((err) => {
@@ -66,11 +68,12 @@ class Verdict extends React.Component {
         const { astroTwiStart, astroTwiHours } = this.state.darkness;
         const { lat, long } = this.state;
         this.fetchCloudData(astroTwiStart, astroTwiHours, lat, long)
+        this.setState({ darkAlready: calculateIfAstroDarkAlready(this.state.darkness, new Date().getHours(), new Date().getMinutes()) })
     }
 
     render() {
-        const { darkHours, astroTwiHours, darkStart } = this.state.darkness
-        const { cloudCover } = this.state
+        const { darkHours, astroTwiHours } = this.state.darkness
+        const { cloudCover, darkAlready } = this.state
 
         const Div = styled.div`
         .clouds{
@@ -88,29 +91,29 @@ class Verdict extends React.Component {
             <React.Fragment>
                 <h1>Telescope Night?</h1>
                 <section className='verdict'>
-                    {(darkHours === 0 && cloudCover === 0) && //will need to change so doesn't appear for a clear night using twilight hours.
-                        <>
-                            <p>No true darkness tonight, use astronomical twilight.</p>
-                        </>
+                    {darkHours <= 0 && !cloudCover &&
+                        <p>No true darkness tonight, use astronomical twilight.</p>
                     }
-                    {((cloudCover > 0 && cloudCover < 10) && (darkHours > 0 || astroTwiHours > 0)) &&
-                        <p>DEFINITELY</p>
+                    {((cloudCover && cloudCover >= 0 && cloudCover < 10) && (darkHours > 0 || astroTwiHours > 0)) &&
+                        <p className='definitely'>DEFINITELY</p>
                     }
                     {(cloudCover >= 10 && cloudCover < 30 && (darkHours > 0 || astroTwiHours > 0)) &&
-                        <p>LOOKING GOOD</p>
+                        <p className='lookingGood'>LOOKING GOOD</p>
                     }
-                    {(cloudCover >= 30 && cloudCover <= 70) &&
-                        <p>MAYBE</p>
+                    {(cloudCover >= 30 && cloudCover <= 50) &&
+                        <p className='maybe'>MAYBE</p>
+                    }
+                    {(cloudCover > 50 && cloudCover <= 70) &&
+                        <p className='unlikely'>UNLIKELY</p>
                     }
                     {cloudCover > 70 &&
-                        <p>No</p>
+                        <p className='no'>No</p>
                     }
                 </section>
                 {(cloudCover > 0) &&
-                    <h3>{this.state.cloudCover}% cloud cover</h3>
+                    <h3>{cloudCover}% cloud cover</h3>
                 }
-
-                {(new Date().getHours() > darkStart || new Date().getHours() < 3) &&
+                {darkAlready &&
                     <p className='tomorrow'>Dark already. Showing data for tomorrow night.</p>
                 }
                 <br />
