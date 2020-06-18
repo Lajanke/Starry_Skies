@@ -7,7 +7,7 @@ import { getCloudData, getDarkHours, calculateIfDarkAlready, calculateIfAstroDar
 class Verdict extends React.Component {
     state = {
         darkness: {},
-        cloudCover: null,
+        cloudCover: 0,
         lat: 0,
         log: 0,
         darkAlready: false,
@@ -97,10 +97,10 @@ class Verdict extends React.Component {
                     {((cloudCover && cloudCover >= 0 && cloudCover < 10) && (darkHours > 0 || astroTwiHours > 0)) &&
                         <p className='definitely'>DEFINITELY</p>
                     }
-                    {(cloudCover >= 10 && cloudCover < 30 && (darkHours > 0 || astroTwiHours > 0)) &&
+                    {(cloudCover >= 10 && cloudCover <= 30 && (darkHours > 0 || astroTwiHours > 0)) &&
                         <p className='lookingGood'>LOOKING GOOD</p>
                     }
-                    {(cloudCover >= 30 && cloudCover <= 50) &&
+                    {(cloudCover > 30 && cloudCover <= 50) &&
                         <p className='maybe'>MAYBE</p>
                     }
                     {(cloudCover > 50 && cloudCover <= 70) &&
