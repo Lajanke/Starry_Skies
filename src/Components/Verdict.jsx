@@ -7,12 +7,13 @@ import { getCloudData, getDarkHours, calculateIfDarkAlready, calculateIfAstroDar
 class Verdict extends React.Component {
     state = {
         darkness: {},
-        cloudCover: 0,
+        cloudCover: null,
         lat: 0,
         log: 0,
         darkAlready: false,
         err: '',
         loading: true,
+        usingAStroTwi: false,
     }
 
     componentDidMount() {
@@ -68,16 +69,20 @@ class Verdict extends React.Component {
         const { astroTwiStart, astroTwiHours } = this.state.darkness;
         const { lat, long } = this.state;
         this.fetchCloudData(astroTwiStart, astroTwiHours, lat, long)
-        this.setState({ darkAlready: calculateIfAstroDarkAlready(this.state.darkness, new Date().getHours(), new Date().getMinutes()) })
+        this.setState({ darkAlready: calculateIfAstroDarkAlready(this.state.darkness, new Date().getHours(), new Date().getMinutes()), usingAStroTwi: true })
     }
+
+    
 
     render() {
         const { darkHours, astroTwiHours } = this.state.darkness
-        const { cloudCover, darkAlready } = this.state
+        const { cloudCover, darkAlready, usingAStroTwi } = this.state
+
+        console.log(cloudCover, astroTwiHours, cloudCover === null)
 
         const Div = styled.div`
         .clouds{
-            opacity: ${cloudCover / 100};
+            opacity: ${cloudCover === 0 ? 0 : cloudCover / 100};
         }
 
         .blue {
@@ -91,26 +96,26 @@ class Verdict extends React.Component {
             <React.Fragment>
                 <h1>Telescope Night?</h1>
                 <section className='verdict'>
-                    {darkHours <= 0 && !cloudCover &&
+                    {darkHours === 0 && cloudCover === null && !usingAStroTwi &&
                         <p>No true darkness tonight, use astronomical twilight.</p>
                     }
-                    {((cloudCover && cloudCover >= 0 && cloudCover < 10) && (darkHours > 0 || astroTwiHours > 0)) &&
+                    {cloudCover >= 0 && cloudCover < 10 && (darkHours > 0 || usingAStroTwi) &&
                         <p className='definitely'>DEFINITELY</p>
                     }
-                    {(cloudCover >= 10 && cloudCover <= 30 && (darkHours > 0 || astroTwiHours > 0)) &&
+                    {cloudCover >= 10 && cloudCover <= 30 &&
                         <p className='lookingGood'>LOOKING GOOD</p>
                     }
-                    {(cloudCover > 30 && cloudCover <= 50) &&
+                    {cloudCover > 30 && cloudCover <= 50 &&
                         <p className='maybe'>MAYBE</p>
                     }
-                    {(cloudCover > 50 && cloudCover <= 70) &&
+                    {cloudCover > 50 && cloudCover <= 70 &&
                         <p className='unlikely'>UNLIKELY</p>
                     }
                     {cloudCover > 70 &&
                         <p className='no'>No</p>
                     }
                 </section>
-                {(cloudCover > 0) &&
+                {typeof(cloudCover) === "number" &&
                     <h3>{cloudCover}% cloud cover</h3>
                 }
                 {darkAlready &&
@@ -119,10 +124,10 @@ class Verdict extends React.Component {
                 <br />
                 <img src='milky_way2.png' alt="stars" />
                 <Div>
-                    {darkHours <= 0 && !cloudCover &&
+                    {darkHours === 0 && cloudCover === null &&
                         <img src='blue.png' alt='blue sky' className='blue' />
                     }
-                    {(darkHours > 0 || astroTwiHours > 0) && cloudCover &&
+                    {(darkHours > 0 || astroTwiHours > 0) && cloudCover >= 0 &&
                         <img src="clouds.png" alt="clouds" className='clouds' />
                     }
                 </Div>
