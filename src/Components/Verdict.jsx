@@ -54,7 +54,7 @@ class Verdict extends React.Component {
     }
 
     fetchCloudData = (start, hours, lat, long) => {
-        Axios.get(`https://api.weatherbit.io/v2.0/forecast/hourly?lat=${lat}&lon=${long}&key=${MY_KEY}`)
+        Axios.get(`https://api.weatherbit.io/v2.0/forecast/hourly?lat=${lat}&lon=${long}&key=${process.env.REACT_APP_MY_KEY}`)
             .then((response) => {
                 this.setState({ cloudCover: getCloudData(start, hours, response.data.data) });
             })
@@ -73,10 +73,8 @@ class Verdict extends React.Component {
     
 
     render() {
-        const { darkHours, astroTwiHours } = this.state.darkness
-        const { cloudCover, darkAlready, usingAStroTwi } = this.state
-
-        console.log(cloudCover, astroTwiHours, cloudCover === null)
+        const { darkHours, astroTwiHours } = this.state.darkness;
+        const { cloudCover, darkAlready, usingAStroTwi } = this.state;
 
         const Div = styled.div`
         .clouds{
