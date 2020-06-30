@@ -1,7 +1,6 @@
 import React from 'react';
 import Axios from 'axios';
 import styled from 'styled-components';
-import config from '../config';
 import { getCloudData, getDarkHours, calculateIfDarkAlready, calculateIfAstroDarkAlready } from '../utils';
 
 class Verdict extends React.Component {
