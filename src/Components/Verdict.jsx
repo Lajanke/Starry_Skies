@@ -54,13 +54,18 @@ class Verdict extends React.Component {
     }
 
     fetchCloudData = (start, hours, lat, long) => {
-        Axios.get(`https://api.weatherbit.io/v2.0/forecast/hourly?lat=${lat}&lon=${long}&key=${process.env.REACT_APP_MY_KEY}`)
-            .then((response) => {
-                this.setState({ cloudCover: getCloudData(start, hours, response.data.data) });
-            })
-            .catch((err) => {
-                this.setState({ err: err.message })
-            });
+        Axios.get(`https://weatherbit-v1-mashape.p.rapidapi.com/forecast/hourly?lang=en&hours=36&lat=${lat}&lon=${long}`, {
+            "headers": {
+                "x-rapidapi-host": "weatherbit-v1-mashape.p.rapidapi.com",
+                "x-rapidapi-key": `${process.env.REACT_APP_MY_KEY}`
+            }
+        })
+        .then(response => {
+            this.setState({ cloudCover: getCloudData(start, hours, response.data.data) });
+        })
+        .catch(err => {
+            this.setState(err)
+        });
     }
 
     handleButtonClick = () => {
@@ -69,8 +74,6 @@ class Verdict extends React.Component {
         this.fetchCloudData(astroTwiStart, astroTwiHours, lat, long)
         this.setState({ darkAlready: calculateIfAstroDarkAlready(this.state.darkness, new Date().getHours(), new Date().getMinutes()), usingAStroTwi: true })
     }
-
-    
 
     render() {
         const { darkHours, astroTwiHours } = this.state.darkness;
